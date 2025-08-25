@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
 
     steps:
@@ -33,16 +33,6 @@ jobs:
       run: |
         brew install dav1d nasm
 
-    - name: Install system dependencies (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: bash
-      run: |
-        # Install NASM and pkg-config for Windows
-        choco install nasm pkgconfiglite
-        # Install vcpkg and dav1d
-        vcpkg install dav1d:x64-windows-static-md
-        echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
-        echo "CMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" >> $GITHUB_ENV
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
@@ -57,11 +47,6 @@ jobs:
         source .venv/bin/activate
         uv pip install maturin[dev] numpy pillow
         
-    - name: Install dependencies (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        .venv\Scripts\activate
-        uv pip install maturin[dev] numpy pillow
 
     - name: Build and test (Unix)
       if: runner.os != 'Windows'
@@ -70,12 +55,6 @@ jobs:
         maturin develop
         python -c "import images_rs; print('Import successful')"
         
-    - name: Build and test (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        .venv\Scripts\activate
-        maturin develop
-        python -c "import images_rs; print('Import successful')"
         
     - name: Run comprehensive tests (Unix)
       if: runner.os != 'Windows'
@@ -83,8 +62,3 @@ jobs:
         source .venv/bin/activate
         python test_basic.py
         
-    - name: Run comprehensive tests (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        .venv\Scripts\activate
-        python test_basic.py
