@@ -39,7 +39,10 @@ jobs:
       run: |
         # Install NASM for Windows
         choco install nasm
-        # Note: dav1d might need to be built from source or use vcpkg
+        # Install vcpkg and dav1d
+        vcpkg install dav1d:x64-windows-static-md
+        echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
+        echo "CMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" >> $GITHUB_ENV
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
