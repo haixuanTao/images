@@ -37,8 +37,8 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: bash
       run: |
-        # Install NASM for Windows
-        choco install nasm
+        # Install NASM and pkg-config for Windows
+        choco install nasm pkgconfiglite
         # Install vcpkg and dav1d
         vcpkg install dav1d:x64-windows-static-md
         echo "VCPKG_ROOT=$VCPKG_INSTALLATION_ROOT" >> $GITHUB_ENV
