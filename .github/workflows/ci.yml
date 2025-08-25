@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install system dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libdav1d-dev nasm
+
+    - name: Install system dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install dav1d nasm
+
+    - name: Install system dependencies (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        # Note: Windows builds might need vcpkg or other package managers
+        # For now, we'll rely on static linking where possible
+        echo "Windows dependencies handled by vcpkg or static linking"
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install maturin[dev] numpy pillow
+
+    - name: Build and test
+      run: |
+        maturin develop
+        python -c "import images_rs; print('Import successful')"
+        
+    - name: Run comprehensive tests
+      run: |
+        python test_basic.py

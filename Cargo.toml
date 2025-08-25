@@ -1,0 +1,24 @@
+[package]
+name = "images-rs"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "images_rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.22", features = ["extension-module"] }
+rayon = "1.10"
+image = { version = "0.25", features = [
+    "avif-native",
+    "rayon",
+    "nasm",
+    "webp",
+    "jpeg",
+    "png",
+    "gif",
+    "tiff",
+    "bmp",
+] }
+numpy = "0.22"

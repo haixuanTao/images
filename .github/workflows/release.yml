@@ -1,0 +1,113 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.1.1)'
+        required: true
+        type: string
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install toml
+
+    - name: Update version
+      run: |
+        python -c "
+        import toml
+        import sys
+        
+        # Update Cargo.toml
+        with open('Cargo.toml', 'r') as f:
+            cargo_data = toml.load(f)
+        cargo_data['package']['version'] = '${{ inputs.version }}'
+        with open('Cargo.toml', 'w') as f:
+            toml.dump(cargo_data, f)
+        
+        # Update pyproject.toml
+        with open('pyproject.toml', 'r') as f:
+            pyproject_data = toml.load(f)
+        pyproject_data['project']['version'] = '${{ inputs.version }}'
+        with open('pyproject.toml', 'w') as f:
+            toml.dump(pyproject_data, f)
+            
+        print(f'Updated version to ${{ inputs.version }}')
+        "
+
+    - name: Update Cargo.lock
+      run: |
+        cargo update --package images-rs
+
+    - name: Commit version update
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add Cargo.toml pyproject.toml Cargo.lock
+        git commit -m "chore: bump version to ${{ inputs.version }}"
+
+    - name: Create and push tag
+      run: |
+        git tag v${{ inputs.version }}
+        git push origin main --tags
+
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ inputs.version }}
+        release_name: images-rs v${{ inputs.version }}
+        body: |
+          ## images-rs v${{ inputs.version }}
+          
+          High-performance Rust-Python extension for parallel image reading with native AVIF support.
+          
+          ### Features
+          - ✅ Parallel image processing with Rayon
+          - ✅ Native AVIF support via dav1d decoder  
+          - ✅ Optimized for batch processing (20+ images)
+          - ✅ Support for PNG, JPEG, AVIF, WebP, GIF, TIFF, BMP
+          - ✅ Both 3D numpy arrays and flat byte array outputs
+          
+          ### Installation
+          ```bash
+          pip install images-rs
+          ```
+          
+          ### Performance
+          - 20-30% faster than threaded Pillow for AVIF batch processing
+          - Optimized NASM assembly routines where available
+          - Memory-efficient direct array creation
+          
+          ### Usage
+          ```python
+          import images_rs
+          
+          # Read images in parallel
+          paths = ["image1.avif", "image2.png", "image3.jpg"]  
+          result = images_rs.read_images_parallel(paths)
+          
+          images = result["images"]  # List of (numpy_array, width, height)
+          errors = result["errors"]  # List of (index, error_message)
+          ```
+          
+          See [README](https://github.com/${{ github.repository }}) for full documentation.
+        draft: false
+        prerelease: false

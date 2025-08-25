@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Rust
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# PyO3
+*.so
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test files
+test_*.avif
+test_*.png
+test_*.jpg
+test_*.jpeg
+
+# Temporary directories
+avif_test/
+large_test/
+
+# Virtual environments
+venv/
+env/
+.env
