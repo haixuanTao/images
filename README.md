@@ -1,8 +1,8 @@
-# images-rs
+# images
 
-[![CI](https://github.com/your-username/images-rs/workflows/CI/badge.svg)](https://github.com/your-username/images-rs/actions)
-[![PyPI](https://img.shields.io/pypi/v/images-rs.svg)](https://pypi.org/project/images-rs/)
-[![Python](https://img.shields.io/pypi/pyversions/images-rs.svg)](https://pypi.org/project/images-rs/)
+[![CI](https://github.com/your-username/images/workflows/CI/badge.svg)](https://github.com/your-username/images/actions)
+[![PyPI](https://img.shields.io/pypi/v/images.svg)](https://pypi.org/project/images/)
+[![Python](https://img.shields.io/pypi/pyversions/images.svg)](https://pypi.org/project/images/)
 
 A high-performance Rust-Python extension for parallel image reading with native AVIF support.
 
@@ -17,24 +17,29 @@ A high-performance Rust-Python extension for parallel image reading with native 
 ## System Dependencies
 
 ### AVIF Support
+
 This library uses the native dav1d decoder for AVIF images. You may need to install system dependencies:
 
 **macOS (using Homebrew):**
+
 ```bash
 brew install dav1d nasm
 ```
 
 **Ubuntu/Debian:**
+
 ```bash
 sudo apt-get install libdav1d-dev nasm
 ```
 
 **Fedora/RHEL:**
+
 ```bash
 sudo dnf install dav1d-devel nasm
 ```
 
 ### Build Requirements
+
 - Rust toolchain
 - Python 3.8+
 - NASM (for optimized assembly routines)
@@ -42,15 +47,18 @@ sudo dnf install dav1d-devel nasm
 ## Installation
 
 ### From PyPI (Recommended)
+
 ```bash
-pip install images-rs
+pip install images
 ```
 
 Pre-compiled wheels are available for:
+
 - **Python**: 3.8, 3.9, 3.10, 3.11, 3.12
 - **Platforms**: Linux (x86_64), macOS (Intel + Apple Silicon), Windows (x86_64)
 
 ### From Source
+
 If a wheel isn't available for your platform:
 
 ```bash
@@ -59,8 +67,8 @@ If a wheel isn't available for your platform:
 # Ubuntu: sudo apt-get install libdav1d-dev nasm
 
 pip install maturin
-git clone https://github.com/your-username/images-rs
-cd images-rs  
+git clone https://github.com/your-username/images
+cd images
 maturin develop --release
 ```
 
@@ -92,23 +100,29 @@ for i, (img_array, width, height) in enumerate(images):
 ## Functions
 
 ### `read_images_parallel(paths)`
+
 Returns images as 3D numpy arrays with shape `(height, width, 3)`.
 
 **Parameters:**
+
 - `paths`: List of image file paths
 
 **Returns:**
+
 - Dictionary with:
   - `"images"`: List of `(numpy_array, width, height)` tuples
   - `"errors"`: List of `(index, error_message)` tuples for failed images
 
 ### `read_images_as_bytes_parallel(paths)`
+
 Returns images as flat byte arrays (more memory efficient).
 
 **Parameters:**
+
 - `paths`: List of image file paths
 
 **Returns:**
+
 - Dictionary with:
   - `"images"`: List of `(flat_numpy_array, width, height)` tuples
   - `"errors"`: List of `(index, error_message)` tuples for failed images
@@ -116,6 +130,7 @@ Returns images as flat byte arrays (more memory efficient).
 ## Performance
 
 Tested with 50 mixed-format images (PNG/JPEG/AVIF):
+
 - **Processing speed**: ~50-57 million pixels/second
 - **Average time per image**: 0.0005-0.0006 seconds
 - **Parallel efficiency**: Scales with CPU cores using Rayon

@@ -1,13 +1,14 @@
-# CI/CD Setup for images-rs
+# CI/CD Setup for images
 
-This document explains the automated CI/CD pipeline for building and distributing `images-rs`.
+This document explains the automated CI/CD pipeline for building and distributing `images`.
 
 ## Workflows
 
 ### 1. **CI (`ci.yml`)**
+
 - **Triggers**: Push to main/develop, Pull Requests
 - **Purpose**: Test the code on multiple platforms and Python versions
-- **Matrix**: 
+- **Matrix**:
   - OS: Ubuntu, macOS, Windows
   - Python: 3.8, 3.9, 3.10, 3.11, 3.12
 - **Steps**:
@@ -17,6 +18,7 @@ This document explains the automated CI/CD pipeline for building and distributin
   - Run comprehensive tests
 
 ### 2. **Build Wheels (`wheels.yml`)**
+
 - **Triggers**: Git tags (`v*`), Releases, Manual dispatch
 - **Purpose**: Build binary wheels for distribution
 - **Platforms**: Linux, macOS, Windows
@@ -24,12 +26,13 @@ This document explains the automated CI/CD pipeline for building and distributin
   - Uses Zig for better cross-compilation and static linking
   - Bundles dav1d dependencies for standalone wheels
   - NASM optimizations enabled
-- **Outputs**: 
+- **Outputs**:
   - Binary wheels for all supported Python versions
   - Source distribution (sdist)
   - Automatic PyPI upload on release
 
 ### 3. **Release (`release.yml`)**
+
 - **Trigger**: Manual workflow dispatch
 - **Purpose**: Automate version bumps and releases
 - **Steps**:
@@ -39,6 +42,7 @@ This document explains the automated CI/CD pipeline for building and distributin
   - Trigger wheel building
 
 ### 4. **Test Wheels (`test-wheels.yml`)**
+
 - **Triggers**: After release, Manual dispatch
 - **Purpose**: Verify published wheels work correctly
 - **Tests**: Install from PyPI and run basic functionality tests
@@ -49,7 +53,7 @@ This document explains the automated CI/CD pipeline for building and distributin
 
 You'll need to add these secrets to your GitHub repository:
 
-1. **`PYPI_API_TOKEN`**: 
+1. **`PYPI_API_TOKEN`**:
    - Go to [PyPI](https://pypi.org/account/login/)
    - Generate an API token
    - Add to GitHub repo secrets
@@ -57,6 +61,7 @@ You'll need to add these secrets to your GitHub repository:
 ### PyPI Project Setup
 
 1. **Reserve project name**:
+
    ```bash
    # First time only - reserve the name
    pip install twine
@@ -68,27 +73,30 @@ You'll need to add these secrets to your GitHub repository:
 2. **Configure trusted publisher** (recommended):
    - Go to PyPI project settings
    - Add GitHub as trusted publisher
-   - Repository: `your-username/images-rs`
+   - Repository: `your-username/images`
    - Workflow: `wheels.yml`
    - Environment: Not set
 
 ## Usage
 
 ### Regular Development
+
 1. Push code → CI runs automatically
 2. Create PR → CI runs on PR
 
 ### Creating a Release
+
 1. Go to GitHub Actions
 2. Run "Release" workflow
 3. Enter version (e.g., `0.1.1`)
 4. This will:
    - Update version files
    - Create git tag
-   - Create GitHub release  
+   - Create GitHub release
    - Build and upload wheels to PyPI
 
 ### Manual Wheel Building
+
 ```bash
 # Trigger wheel building manually
 gh workflow run wheels.yml
@@ -97,20 +105,22 @@ gh workflow run wheels.yml
 ## Platform Support
 
 | Platform | Architecture | Python Versions | Status |
-|----------|-------------|-----------------|--------|
-| Linux    | x86_64      | 3.8-3.12       | ✅     |
-| macOS    | x86_64      | 3.8-3.12       | ✅     |
-| macOS    | arm64       | 3.8-3.12       | ✅     |
-| Windows  | x86_64      | 3.8-3.12       | ✅     |
+| -------- | ------------ | --------------- | ------ |
+| Linux    | x86_64       | 3.8-3.12        | ✅     |
+| macOS    | x86_64       | 3.8-3.12        | ✅     |
+| macOS    | arm64        | 3.8-3.12        | ✅     |
+| Windows  | x86_64       | 3.8-3.12        | ✅     |
 
 ## Dependencies
 
 ### System Dependencies
+
 - **Linux**: `libdav1d-dev`, `nasm`
-- **macOS**: `dav1d`, `nasm` (via Homebrew)  
+- **macOS**: `dav1d`, `nasm` (via Homebrew)
 - **Windows**: `nasm` (via Chocolatey), dav1d (static linking)
 
 ### Build Tools
+
 - **Rust**: Latest stable toolchain
 - **Zig**: For cross-compilation and static linking (PyPI releases only)
 - **cargo-zigbuild**: Cross-compilation tool
@@ -122,10 +132,12 @@ gh workflow run wheels.yml
 ### Common Issues
 
 1. **dav1d linking errors**:
+
    - Ensure system dependencies are installed
    - Check static linking configuration
 
 2. **NASM not found**:
+
    - Install NASM on the build system
    - Add to PATH
 
@@ -143,6 +155,7 @@ gh workflow run wheels.yml
 ## Performance Optimization
 
 The CI builds include:
+
 - **Release mode**: `--release` flag for optimized binaries
 - **NASM assembly**: Hardware-optimized routines where available
 - **Static linking**: Reduce runtime dependencies
@@ -152,16 +165,19 @@ The CI builds include:
 
 For PyPI wheel builds, Zig provides:
 
-1. **Better Cross-Compilation**: 
+1. **Better Cross-Compilation**:
+
    - Consistent toolchain across platforms
    - Better handling of different architectures (Intel/Apple Silicon)
 
 2. **Static Linking**:
+
    - Bundles dav1d dependency into wheels
    - Reduces installation requirements for end users
    - No need for system dav1d installation
 
 3. **Smaller Binaries**:
+
    - Better dead code elimination
    - Optimized linking process
 

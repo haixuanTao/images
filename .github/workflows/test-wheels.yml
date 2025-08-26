@@ -12,45 +12,45 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
     steps:
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install from PyPI
-      run: |
-        python -m pip install --upgrade pip
-        pip install images-rs pillow numpy
+      - name: Install from PyPI
+        run: |
+          python -m pip install --upgrade pip
+          pip install images pillow numpy
 
-    - name: Test installation
-      run: |
-        python -c "
-        import images_rs
-        import tempfile
-        import numpy as np
-        from PIL import Image
-        import os
-        
-        print('Testing images-rs installation...')
-        
-        # Test empty list
-        result = images_rs.read_images_parallel([])
-        assert len(result['images']) == 0
-        print('✅ Empty list test passed')
-        
-        # Test with a generated image
-        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
-            img_array = np.ones((5, 5, 3), dtype=np.uint8) * 100
-            img = Image.fromarray(img_array)
-            img.save(tmp.name, 'PNG')
-            
-            result = images_rs.read_images_parallel([tmp.name])
-            assert len(result['images']) == 1
-            assert len(result['errors']) == 0
-            os.unlink(tmp.name)
-            
-        print('✅ PyPI installation test passed!')
-        "
+      - name: Test installation
+        run: |
+          python -c "
+          import images_rs
+          import tempfile
+          import numpy as np
+          from PIL import Image
+          import os
+
+          print('Testing images installation...')
+
+          # Test empty list
+          result = images_rs.read_images_parallel([])
+          assert len(result['images']) == 0
+          print('✅ Empty list test passed')
+
+          # Test with a generated image
+          with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
+              img_array = np.ones((5, 5, 3), dtype=np.uint8) * 100
+              img = Image.fromarray(img_array)
+              img.save(tmp.name, 'PNG')
+              
+              result = images_rs.read_images_parallel([tmp.name])
+              assert len(result['images']) == 1
+              assert len(result['errors']) == 0
+              os.unlink(tmp.name)
+              
+          print('✅ PyPI installation test passed!')
+          "
