@@ -39,11 +39,19 @@ jobs:
     - name: Install system dependencies (Ubuntu aarch64)
       if: matrix.os == 'ubuntu-latest' && matrix.arch == 'aarch64'
       run: |
+        # Add ARM64 architecture and update sources
+        sudo dpkg --add-architecture arm64
         sudo apt-get update
-        sudo apt-get install -y gcc-aarch64-linux-gnu libdav1d-dev:arm64
+        
+        # Install cross-compilation tools and ARM64 libraries
+        sudo apt-get install -y gcc-aarch64-linux-gnu pkg-config-aarch64-linux-gnu
+        sudo apt-get install -y libdav1d-dev:arm64
+        
         # Cross-compilation setup for ARM64
         echo "PKG_CONFIG_ALLOW_CROSS=1" >> $GITHUB_ENV
         echo "PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig" >> $GITHUB_ENV
+        echo "CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+        echo "CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++" >> $GITHUB_ENV
 
     - name: Install system dependencies (macOS)  
       if: matrix.os == 'macos-latest'
