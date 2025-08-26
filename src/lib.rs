@@ -40,11 +40,27 @@ fn guess_format_from_extension(path: &str) -> Option<ImageFormat> {
 }
 
 #[pyfunction]
-fn read_images_parallel(py: Python, paths: &Bound<'_, PyList>) -> PyResult<PyObject> {
-    // Extract paths once
+#[pyo3(signature = (paths, num_threads = None))]
+fn read(py: Python, paths: &Bound<'_, PyList>, num_threads: Option<usize>) -> PyResult<PyObject> {
+    // Set the number of threads if specified
+    if let Some(threads) = num_threads {
+        rayon::ThreadPoolBuilder::new()
+            .num_threads(threads)
+            .build_global()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to set thread count: {}", e)))?;
+    }
+    // Extract paths once - handle both strings and Path objects
     let path_strings: Vec<String> = paths
         .iter()
-        .map(|item| item.extract::<String>())
+        .map(|item| {
+            // Try to extract as string first
+            if let Ok(s) = item.extract::<String>() {
+                Ok(s)
+            } else {
+                // Try to get string representation of Path objects
+                item.str()?.extract::<String>()
+            }
+        })
         .collect::<Result<Vec<_>, _>>()?;
 
     // Pre-allocate results
@@ -80,7 +96,6 @@ fn read_images_parallel(py: Python, paths: &Bound<'_, PyList>) -> PyResult<PyObj
 
     // Process results into Python objects
     let mut images = Vec::with_capacity(results.len());
-    let mut errors = Vec::new();
 
     for (i, result) in results.into_iter().enumerate() {
         match result {
@@ -92,83 +107,24 @@ fn read_images_parallel(py: Python, paths: &Bound<'_, PyList>) -> PyResult<PyObj
                 ).map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Array shape error: {}", e)))?;
                 
                 let py_array = PyArray3::from_owned_array_bound(py, array);
-
-                images.push((py_array.to_object(py), width, height));
+                images.push(py_array.to_object(py));
             }
             Err(e) => {
-                errors.push((i, format!("{:?}", e)));
+                // Log error and push None placeholder
+                eprintln!("Error reading image at index {}: {:?}", i, e);
+                images.push(py.None());
             }
         }
     }
 
-    let result_dict = PyDict::new_bound(py);
-    result_dict.set_item("images", images)?;
-    result_dict.set_item("errors", errors)?;
-
-    Ok(result_dict.to_object(py))
+    // Return list of numpy arrays (with None for failed images)
+    let py_list = PyList::new_bound(py, images);
+    Ok(py_list.to_object(py))
 }
 
-#[pyfunction]
-fn read_images_as_bytes_parallel(py: Python, paths: &Bound<'_, PyList>) -> PyResult<PyObject> {
-    // Extract paths once
-    let path_strings: Vec<String> = paths
-        .iter()
-        .map(|item| item.extract::<String>())
-        .collect::<Result<Vec<_>, _>>()?;
-
-    // Pre-allocate results  
-    let mut results = Vec::with_capacity(path_strings.len());
-
-    // Parallel processing
-    path_strings
-        .par_iter()
-        .map(|path| -> Result<(Vec<u8>, u32, u32), ReadError> {
-            let mut reader = ImageReader::open(path)?;
-            
-            if reader.format().is_none() {
-                if let Some(format) = guess_format_from_extension(path) {
-                    reader.set_format(format);
-                } else {
-                    reader = reader.with_guessed_format()?;
-                }
-            }
-
-            let img = reader.decode()?;
-            let rgb_img = img.to_rgb8();
-            let (width, height) = rgb_img.dimensions();
-            
-            let data = rgb_img.into_raw();
-            Ok((data, width, height))
-        })
-        .collect_into_vec(&mut results);
-
-    // Process results
-    let mut images = Vec::with_capacity(results.len());
-    let mut errors = Vec::new();
-
-    for (i, result) in results.into_iter().enumerate() {
-        match result {
-            Ok((data, width, height)) => {
-                // Direct 1D array creation - no reshaping overhead
-                let py_array = PyArray1::from_vec_bound(py, data);
-                images.push((py_array.to_object(py), width, height));
-            }
-            Err(e) => {
-                errors.push((i, format!("{:?}", e)));
-            }
-        }
-    }
-
-    let result_dict = PyDict::new_bound(py);
-    result_dict.set_item("images", images)?;
-    result_dict.set_item("errors", errors)?;
-
-    Ok(result_dict.to_object(py))
-}
 
 #[pymodule]
-fn images_rs(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(read_images_parallel, m)?)?;
-    m.add_function(wrap_pyfunction!(read_images_as_bytes_parallel, m)?)?;
+fn images(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(read, m)?)?;
     Ok(())
 }

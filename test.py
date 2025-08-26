@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import images_rs
+import images
 import numpy as np
 import time
 
@@ -15,22 +15,22 @@ def test_parallel_read():
     print("Testing parallel image reading...")
     
     start_time = time.time()
-    result = images_rs.read_images_as_bytes_parallel(paths)
+    result = images.read(paths, num_threads=4)
     end_time = time.time()
     
     print(f"Read {len(paths)} images in {end_time - start_time:.2f} seconds")
     
-    images = result["images"]
-    errors = result["errors"]
+    successful_count = sum(1 for img in result if img is not None)
+    error_count = sum(1 for img in result if img is None)
     
-    print(f"Successfully read: {len(images)} images")
-    print(f"Errors: {len(errors)}")
+    print(f"Successfully read: {successful_count} images")
+    print(f"Errors: {error_count}")
     
-    for i, (img_array, width, height) in enumerate(images):
-        print(f"Image {i}: {width}x{height}, shape: {img_array.shape}, dtype: {img_array.dtype}")
-    
-    for i, error_msg in errors:
-        print(f"Error reading image {i}: {error_msg}")
+    for i, img_array in enumerate(result):
+        if img_array is not None:
+            print(f"Image {i}: shape: {img_array.shape}, dtype: {img_array.dtype}")
+        else:
+            print(f"Image {i}: Failed to load (check stderr for error details)")
 
 if __name__ == "__main__":
     test_parallel_read()

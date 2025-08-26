@@ -62,7 +62,7 @@ jobs:
       run: |
         source .venv/bin/activate
         maturin develop
-        python -c "import images_rs; print('Import successful')"
+        python -c "import images; print('Import successful')"
         
         
     - name: Run comprehensive tests (Unix)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import images_rs
+import images
 import glob
 import time
 
@@ -15,12 +15,12 @@ def test_renamed_module():
         return
     
     print(f"Testing images-rs with {len(avif_paths)} AVIF images...")
-    print("Available functions:", dir(images_rs))
+    print("Available functions:", dir(images))
     print()
     
     # Test the main function
     start = time.perf_counter()
-    result = images_rs.read_images_parallel(avif_paths)
+    result = images.read(avif_paths)
     end = time.perf_counter()
     
     print(f"Processing time: {end - start:.4f}s")
