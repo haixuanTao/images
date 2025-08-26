@@ -49,7 +49,6 @@ jobs:
       uses: PyO3/maturin-action@v1
       with:
         args: --release --out dist --find-interpreter --zig
-        sccache: 'true'
         manylinux: auto
 
     - name: Upload wheels
