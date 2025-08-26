@@ -20,7 +20,7 @@ jobs:
           - os: ubuntu-latest  
             arch: aarch64
           - os: macos-latest
-            arch: x86_64
+            arch: aarch64
 
     steps:
     - uses: actions/checkout@v4
@@ -60,6 +60,8 @@ jobs:
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ matrix.arch == 'aarch64' && matrix.os == 'ubuntu-latest' && 'aarch64-unknown-linux-gnu' || '' }}
 
     - name: Install Zig
       uses: goto-bus-stop/setup-zig@v2
@@ -69,18 +71,25 @@ jobs:
     - name: Install cargo-zigbuild
       run: cargo install cargo-zigbuild
 
-    - name: Build wheels (x86_64)
-      if: matrix.arch == 'x86_64'
+    - name: Build wheels (Ubuntu x86_64)
+      if: matrix.os == 'ubuntu-latest' && matrix.arch == 'x86_64'
       uses: PyO3/maturin-action@v1
       with:
         args: --release --out dist --find-interpreter --zig
         manylinux: auto
 
-    - name: Build wheels (aarch64)
-      if: matrix.arch == 'aarch64'
+    - name: Build wheels (Ubuntu aarch64)
+      if: matrix.os == 'ubuntu-latest' && matrix.arch == 'aarch64'
       uses: PyO3/maturin-action@v1
       with:
         args: --release --out dist --find-interpreter --zig --target aarch64-unknown-linux-gnu
+        manylinux: auto
+
+    - name: Build wheels (macOS aarch64)
+      if: matrix.os == 'macos-latest' && matrix.arch == 'aarch64'
+      uses: PyO3/maturin-action@v1
+      with:
+        args: --release --out dist --find-interpreter --zig
         manylinux: auto
 
     - name: Upload wheels
