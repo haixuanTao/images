@@ -39,8 +39,15 @@ jobs:
     - name: Install system dependencies (Ubuntu aarch64)
       if: matrix.os == 'ubuntu-latest' && matrix.arch == 'aarch64'
       run: |
-        # Add ARM64 architecture and update sources
+        # Add ARM64 architecture
         sudo dpkg --add-architecture arm64
+        
+        # Fix apt sources for ARM64 - use ports.ubuntu.com for ARM64
+        sudo sed -i 's/deb http/deb [arch=amd64] http/g' /etc/apt/sources.list
+        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -sc) main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -sc)-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -sc)-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
+        
         sudo apt-get update
         
         # Install cross-compilation tools and ARM64 libraries
