@@ -27,6 +27,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y libdav1d-dev nasm
+        # Create symlink for zig linker to find dav1d
+        ln -s /lib/x86_64-linux-gnu/libdav1d.so $HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libdav1d.so
 
     - name: Install system dependencies (macOS)  
       if: matrix.os == 'macos-latest'
