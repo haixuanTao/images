@@ -17,8 +17,6 @@ jobs:
         include:
           - os: ubuntu-latest
             arch: x86_64
-          - os: ubuntu-latest  
-            arch: aarch64
           - os: macos-latest
             arch: aarch64
 
@@ -36,29 +34,6 @@ jobs:
         # Create symlink for zig linker to find dav1d
         ln -s /lib/x86_64-linux-gnu/libdav1d.so $HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libdav1d.so
 
-    - name: Install system dependencies (Ubuntu aarch64)
-      if: matrix.os == 'ubuntu-latest' && matrix.arch == 'aarch64'
-      run: |
-        # Add ARM64 architecture
-        sudo dpkg --add-architecture arm64
-        
-        # Fix apt sources for ARM64 - use ports.ubuntu.com for ARM64
-        sudo sed -i 's/deb http/deb [arch=amd64] http/g' /etc/apt/sources.list
-        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -sc) main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -sc)-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -sc)-security main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-        
-        sudo apt-get update
-        
-        # Install cross-compilation tools and ARM64 libraries
-        sudo apt-get install -y gcc-aarch64-linux-gnu pkg-config-aarch64-linux-gnu
-        sudo apt-get install -y libdav1d-dev:arm64
-        
-        # Cross-compilation setup for ARM64
-        echo "PKG_CONFIG_ALLOW_CROSS=1" >> $GITHUB_ENV
-        echo "PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig" >> $GITHUB_ENV
-        echo "CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
-        echo "CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++" >> $GITHUB_ENV
 
     - name: Install system dependencies (macOS)  
       if: matrix.os == 'macos-latest'
@@ -75,8 +50,6 @@ jobs:
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
-      with:
-        targets: ${{ matrix.arch == 'aarch64' && matrix.os == 'ubuntu-latest' && 'aarch64-unknown-linux-gnu' || '' }}
 
     - name: Install Zig
       uses: goto-bus-stop/setup-zig@v2
@@ -93,12 +66,6 @@ jobs:
         args: --release --out dist --find-interpreter --zig
         manylinux: auto
 
-    - name: Build wheels (Ubuntu aarch64)
-      if: matrix.os == 'ubuntu-latest' && matrix.arch == 'aarch64'
-      uses: PyO3/maturin-action@v1
-      with:
-        args: --release --out dist --find-interpreter --zig --target aarch64-unknown-linux-gnu
-        manylinux: auto
 
     - name: Build wheels (macOS aarch64)
       if: matrix.os == 'macos-latest' && matrix.arch == 'aarch64'
