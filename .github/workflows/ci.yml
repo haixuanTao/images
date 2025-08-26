@@ -34,6 +34,13 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: |
         brew install dav1d nasm
+        # Create directories and symlinks for zig linker to find dav1d on macOS
+        mkdir -p /Users/runner/Library/Caches/cargo-zigbuild/0.20.0/deps/
+        # Find the actual homebrew dav1d library and create symlinks
+        DAV1D_LIB=$(find /opt/homebrew/lib /usr/local/lib -name "libdav1d.dylib" 2>/dev/null | head -1)
+        if [ -n "$DAV1D_LIB" ]; then
+          ln -sf "$DAV1D_LIB" /Users/runner/Library/Caches/cargo-zigbuild/0.20.0/deps/libdav1d.dylib
+        fi
 
 
     - name: Install Rust
