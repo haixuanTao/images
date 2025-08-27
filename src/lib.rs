@@ -43,11 +43,15 @@ fn guess_format_from_extension(path: &str) -> Option<ImageFormat> {
 #[pyo3(signature = (paths, num_threads = None))]
 fn read(py: Python, paths: &Bound<'_, PyList>, num_threads: Option<usize>) -> PyResult<PyObject> {
     // Set the number of threads if specified
+    // Note: Rayon's global thread pool can only be initialized once per process
     if let Some(threads) = num_threads {
-        rayon::ThreadPoolBuilder::new()
+        if let Err(_) = rayon::ThreadPoolBuilder::new()
             .num_threads(threads)
-            .build_global()
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to set thread count: {}", e)))?;
+            .build_global() 
+        {
+            // Thread pool already initialized, ignore silently
+            // This is expected in testing or multiple function calls
+        }
     }
     // Extract paths once - handle both strings and Path objects
     let path_strings: Vec<String> = paths
