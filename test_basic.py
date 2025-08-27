@@ -83,6 +83,51 @@ def test_thread_parameter():
             os.unlink(tmp.name)
 
 
+def test_image_content():
+    """Test that the actual pixel values are read correctly"""
+    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+        # Create a test image with known pixel values
+        # Red, Green, Blue stripes
+        img_array = np.zeros((3, 3, 3), dtype=np.uint8)
+        img_array[0, :, 0] = 255  # Red stripe
+        img_array[1, :, 1] = 255  # Green stripe  
+        img_array[2, :, 2] = 255  # Blue stripe
+        
+        img = Image.fromarray(img_array)
+        img.save(tmp.name, "PNG")
+
+        try:
+            # Read the image back
+            result = images_rs.read([tmp.name])
+            
+            assert len(result) == 1
+            assert result[0] is not None
+            
+            loaded_array = result[0]
+            assert loaded_array.shape == (3, 3, 3)
+            
+            # Check specific pixel values
+            # Red stripe (row 0)
+            assert loaded_array[0, 0, 0] == 255  # Red channel
+            assert loaded_array[0, 0, 1] == 0    # Green channel
+            assert loaded_array[0, 0, 2] == 0    # Blue channel
+            
+            # Green stripe (row 1)  
+            assert loaded_array[1, 0, 0] == 0    # Red channel
+            assert loaded_array[1, 0, 1] == 255  # Green channel
+            assert loaded_array[1, 0, 2] == 0    # Blue channel
+            
+            # Blue stripe (row 2)
+            assert loaded_array[2, 0, 0] == 0    # Red channel
+            assert loaded_array[2, 0, 1] == 0    # Green channel  
+            assert loaded_array[2, 0, 2] == 255  # Blue channel
+
+            print("✅ Image content validation test passed")
+
+        finally:
+            os.unlink(tmp.name)
+
+
 def run_all_tests():
     """Run all tests"""
     print("Running basic tests for images...")
@@ -92,6 +137,7 @@ def run_all_tests():
     test_nonexistent_files()
     test_with_real_image()
     test_thread_parameter()
+    test_image_content()
 
     print("🎉 All tests passed!")
 
