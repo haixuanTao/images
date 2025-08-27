@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import images
+import images_rs
 import numpy as np
 import time
 
@@ -15,7 +15,7 @@ def test_parallel_read():
     print("Testing parallel image reading...")
     
     start_time = time.time()
-    result = images.read(paths, num_threads=4)
+    result = images_rs.read(paths, num_threads=4)
     end_time = time.time()
     
     print(f"Read {len(paths)} images in {end_time - start_time:.2f} seconds")

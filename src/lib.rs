@@ -124,7 +124,7 @@ fn read(py: Python, paths: &Bound<'_, PyList>, num_threads: Option<usize>) -> Py
 
 
 #[pymodule]
-fn images(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn images_rs(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(read, m)?)?;
     Ok(())
 }

@@ -1,10 +1,10 @@
 [package]
-name = "images"
+name = "images-rs"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "images"
+name = "images_rs"
 crate-type = ["cdylib"]
 
 [dependencies]

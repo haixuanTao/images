@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import images
+import images_rs
 import numpy as np
 import time
 import os
@@ -31,7 +31,7 @@ def test_all_images():
         print(f"=== Testing {func_name} ({description}) ===")
         
         start_time = time.time()
-        func = getattr(images, func_name)
+        func = getattr(images_rs, func_name)
         result = func(image_paths)
         end_time = time.time()
         

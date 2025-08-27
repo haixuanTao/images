@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import images
+import images_rs
 import numpy as np
 
 def test_supported_formats():
@@ -16,7 +16,7 @@ def test_supported_formats():
     ]
     
     print("Testing format support...")
-    result = images.read(test_paths)
+    result = images_rs.read(test_paths)
     
     # Check results - None means error (logged to stderr)
     for i, image in enumerate(result):

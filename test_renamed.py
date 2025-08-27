@@ -3,7 +3,7 @@
 import glob
 import time
 
-import images
+import images_rs
 
 
 def test_renamed_module():
@@ -17,22 +17,25 @@ def test_renamed_module():
         return
 
     print(f"Testing images with {len(avif_paths)} AVIF images...")
-    print("Available functions:", dir(images))
+    print("Available functions:", dir(images_rs))
     print()
 
     # Test the main function
     start = time.perf_counter()
-    result = images.read(avif_paths)
+    result = images_rs.read(avif_paths)
     end = time.perf_counter()
 
     print(f"Processing time: {end - start:.4f}s")
-    print(f"Successfully read: {len(result['images'])} images")
-    print(f"Errors: {len(result['errors'])}")
+    successful_count = sum(1 for img in result if img is not None)
+    error_count = sum(1 for img in result if img is None)
+    
+    print(f"Successfully read: {successful_count} images")
+    print(f"Errors: {error_count}")
 
-    if result["images"]:
-        img_array, width, height = result["images"][0]
+    if result and result[0] is not None:
+        img_array = result[0]
         print(
-            f"Sample image: {width}x{height}, shape: {img_array.shape}, dtype: {img_array.dtype}"
+            f"Sample image: shape: {img_array.shape}, dtype: {img_array.dtype}"
         )
 
     print("\n✅ images is working correctly!")

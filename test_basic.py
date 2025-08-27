@@ -7,18 +7,18 @@ import tempfile
 import numpy as np
 from PIL import Image
 
-import images
+import images_rs
 
 
 def test_import():
     """Test that the module imports successfully"""
-    assert hasattr(images, "read")
+    assert hasattr(images_rs, "read")
     print("✅ Import test passed")
 
 
 def test_empty_list():
     """Test with empty image list"""
-    result = images.read([])
+    result = images_rs.read([])
     assert isinstance(result, list)
     assert len(result) == 0
     print("✅ Empty list test passed")
@@ -26,7 +26,7 @@ def test_empty_list():
 
 def test_nonexistent_files():
     """Test with non-existent files"""
-    result = images.read(["nonexistent1.png", "nonexistent2.jpg"])
+    result = images_rs.read(["nonexistent1.png", "nonexistent2.jpg"])
     assert len(result) == 2
     assert result[0] is None
     assert result[1] is None
@@ -44,7 +44,7 @@ def test_with_real_image():
 
         try:
             # Test reading the image
-            result = images.read([tmp.name])
+            result = images_rs.read([tmp.name])
 
             assert len(result) == 1
             assert result[0] is not None
@@ -71,7 +71,7 @@ def test_thread_parameter():
 
         try:
             # Test with specific thread count
-            result = images.read([tmp.name], num_threads=1)
+            result = images_rs.read([tmp.name], num_threads=1)
 
             assert len(result) == 1
             assert result[0] is not None
