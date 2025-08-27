@@ -6,10 +6,18 @@ build-backend = "maturin"
 name = "images-rs"
 version = "0.1.1"
 requires-python = ">=3.8"
+description = "Fast parallel image reading library with Rust backend"
+readme = "README.md"
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
 ]
 dependencies = ["numpy"]
 
@@ -18,3 +26,7 @@ dev-dependencies = ["maturin>=1.0,<2.0"]
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
+include = [
+    { path = "images_rs.pyi", format = "wheel" },
+    { path = "py.typed", format = "wheel" },
+]
